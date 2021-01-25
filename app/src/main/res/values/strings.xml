@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">배달올거제</string>
+    <string name="domain">www.allgeoje.net</string>
+    <string name="login">http://www.allgeoje.net/bbs/login.php</string>
+    <string name="index">http://www.allgeoje.net/index.php</string>
+    <string name="loginchk">http://www.allgeoje.net/bbs/login_check.php</string>
+    <string name="msg_token_fmt" translatable="false">InstanceID Token: %s</string>
+    <string name="default_notification_channel_id">allgeoje</string>
+</resources>
