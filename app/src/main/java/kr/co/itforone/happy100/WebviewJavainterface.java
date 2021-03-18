@@ -3,6 +3,7 @@ package kr.co.itforone.happy100;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
@@ -68,6 +69,20 @@ class WebviewJavainterface {
             public void run() {
                 mainActivity.webView.clearCache(true);
                 Toast.makeText(mainActivity.getApplicationContext(), "캐시가 삭제되었습니다.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // 로그인데이터저장/삭제
+    @JavascriptInterface
+    public void updateLoginInfo(final String mb_id) {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                mainActivity.pEditor.putString("appLoginId", mb_id);
+                mainActivity.pEditor.apply();
+
+                Log.d("로그:updateLoginInfo()", mb_id);
             }
         });
     }

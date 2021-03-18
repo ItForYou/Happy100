@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.WebView;
@@ -42,15 +43,16 @@ class ClientManager extends WebViewClient {
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
-        //mainActivity.pBar.setVisibility(View.VISIBLE);  // 로딩바
-        //mainActivity.pBar.setProgress(0);
+        //mainActivity.pBar.setVisibility(View.VISIBLE);  // 로딩바시작
+        mainActivity.imgGif.setVisibility(View.VISIBLE);
     }
 
     // 로딩종료시
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-        //mainActivity.pBar.setVisibility(View.GONE);  // 로딩바
+        //mainActivity.pBar.setVisibility(View.GONE);  // 로딩바끝
+        mainActivity.imgGif.setVisibility(View.GONE);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             CookieSyncManager.getInstance().sync();
@@ -65,11 +67,11 @@ class ClientManager extends WebViewClient {
         if (!firstLoadChk) {
             mainActivity.webView.loadUrl("javascript:initDeleteCart()");
             firstLoadChk = true;
-            Log.d("로그:첫시작후 page fin", firstLoadChk + "");
+            //Log.d("로그:첫시작후 page fin", firstLoadChk + "");
         }
 
         // 당겨서 새로고침 제어
-        String[] noRefreshPage = {"/bbs/store_menu.php", "/bbs/store_menu_list.php", "/bbs/add_delivery.php", "/bbs/add_detail"};
+        String[] noRefreshPage = {"/bbs/store_menu.php", "/bbs/store_menu_list.php", "/bbs/add_delivery.php", "/bbs/add_detail", "/bbs/store_view.php"};
         Boolean chkPage = false;
         for (String page : noRefreshPage) {
             if (url.indexOf(page) > -1) chkPage = true;
@@ -82,8 +84,8 @@ class ClientManager extends WebViewClient {
             mainActivity.flg_refresh=1;
         }
 
-        // 결제완료후 이전 히스토리 삭제
-        if (url.contains("/bbs/order_result.php") || url.contains("/zeropay/cancel.php") || url.equals(mainActivity.getString(R.string.index))) {
+        // 이전 히스토리 삭제
+        if (url.contains("/zeropay/cancel.php") || url.equals(mainActivity.getString(R.string.index)) || url.equals(mainActivity.getString(R.string.domain))) {
             view.clearHistory();
             Log.d("로그:히스토리삭제", url);
         }

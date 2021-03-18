@@ -57,6 +57,7 @@ class ChoromeManager extends WebChromeClient {
                                 result.cancel();
                             }
                         })
+                .setCancelable(false)
                 .create()
                 .show();
         return true;

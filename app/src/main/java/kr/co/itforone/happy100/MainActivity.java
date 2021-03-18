@@ -2,11 +2,14 @@ package kr.co.itforone.happy100;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 import android.view.ViewTreeObserver;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -15,8 +18,12 @@ import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.common.internal.service.Common;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -50,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
 
     public static String TOKEN = ""; // 푸시토큰
 
+    //public ProgressBar pBar;    // 로딩바
+    public ImageView imgGif;
+
+    public SharedPreferences preferences;  // 로그인데이터저장
+    public SharedPreferences.Editor pEditor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +72,15 @@ public class MainActivity extends AppCompatActivity {
 
         webView = biding.webview;
         refreshLayout = biding.refreshlayout;
+        //pBar = biding.pBar;
+        //pBar.setVisibility(View.GONE);  // 로딩바 가림
+
+        imgGif = biding.imgGif; // 로딩이미지
+        Glide.with(this).asGif()    // GIF 로딩
+                .load( R.raw.loading_spin )
+                .override(200, 200)
+                .diskCacheStrategy( DiskCacheStrategy.RESOURCE )    // Glide에서 캐싱한 리소스와 로드할 리소스가 같을때 캐싱된 리소스 사용
+                .into( imgGif );
 
         setTOKEN(this);
 
@@ -68,6 +90,12 @@ public class MainActivity extends AppCompatActivity {
         }
         setCookieAllow(cookieManager, webView);
 
+        // 로그인데이터저장
+        preferences = getSharedPreferences("member", Activity.MODE_PRIVATE);
+        if(preferences!=null) {
+            pEditor = preferences.edit();
+        }
+
         Intent splash = new Intent(kr.co.itforone.happy100.MainActivity.this, SplashActivity.class);
         startActivity(splash);
 
@@ -76,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new kr.co.itforone.happy100.ChoromeManager(this, this));
         webView.setWebContentsDebuggingEnabled(true); // 크롬디버깅
         WebSettings settings = webView.getSettings();
-        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=4");
+        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=7");
         settings.setTextZoom(100);
         settings.setJavaScriptEnabled(true);    // 자바스크립트
         // 휴대폰본인인증시 필수설정
@@ -122,19 +150,27 @@ public class MainActivity extends AppCompatActivity {
         try {
             Intent intent = getIntent();
             Uri uriData = intent.getData();
-            String idx = uriData.getQueryParameter("idx");
-            if (!idx.equals("")) {
-                loadUrl = uriData.getQueryParameter("url").toString() + "?idx=" + uriData.getQueryParameter("idx").toString();
+            Log.d("로그:getExtras()", intent.getExtras().getString("goUrl"));
+            if (uriData != null) {
+                String idx = uriData.getQueryParameter("idx");
+                if (!idx.equals("")) {
+                    loadUrl = uriData.getQueryParameter("url").toString() + "?idx=" + uriData.getQueryParameter("idx").toString();
+                }
             } else if (!intent.getExtras().getString("goUrl").equals("")) {
                 loadUrl = intent.getExtras().getString("goUrl");
             }
-            Log.d("URI로그-최초실행;", uriData.toString());
 
         } catch (Exception e) {
+            Log.d("로그:uriData_exc", e.toString());
         }
 
+        // 로그인데이터 전달..ㅎ
+        loadUrl += (loadUrl.contains("?"))? "&" : "?";
+        loadUrl += "app_mb_id=" + preferences.getString("appLoginId", "");
+        Log.d("로그:onCreate", loadUrl);
+
         webView.loadUrl(loadUrl);
-        //webView.clearCache(true);
+        webView.clearCache(true);
     }
 
     @Override
@@ -159,9 +195,21 @@ public class MainActivity extends AppCompatActivity {
         WebBackForwardList historyList = webView.copyBackForwardList();
         String currentUrl = webView.getUrl();
 
+        if (currentUrl.equals(getString(R.string.index))) {
+            long tempTime = System.currentTimeMillis();
+            long intervalTime = tempTime - backPrssedTime;
+
+            if (0 <= intervalTime && 2000 >= intervalTime) {
+                finish();
+            } else {
+                backPrssedTime = tempTime;
+                Toast.makeText(getApplicationContext(), "한번 더 뒤로가기 누를시 앱이 종료됩니다.", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
         if (webView.canGoBack()) {
             String backTargetUrl = historyList.getItemAtIndex(historyList.getCurrentIndex() - 1).getUrl();
-
             Log.d("로그:currentUrl", currentUrl);
             Log.d("로그:backTargetUrl", backTargetUrl);
 
@@ -189,16 +237,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 return;
-
             } */
-            else if (currentUrl.contains("cart.php") && !backTargetUrl.contains("store_view")) {
-                // 결제취소 후 장바구니로 돌아왔는데 뒤로가기시 상세화면이 아니면 인덱스로...
+            else if ((currentUrl.contains("cart.php") && !backTargetUrl.contains("store_view")) || (currentUrl.contains("/bbs/order_result.php") && !backTargetUrl.contains("/bbs/myorder.php"))
+            || currentUrl.contains("/bbs/order_done.php") || (currentUrl.contains("/bbs/order_list.php") && backTargetUrl.contains("/bbs/order_detail.php"))) {
+                // 결제취소 후 장바구니로 돌아왔는데 뒤로가기시 상세화면이 아니면 인덱스로... or 결제완료->주문페이지 왔을떄 뒤로가기가 주문목록이 아닌경우 or 주문완료 페이지
+                // or 푸시로 주문내역 목록인데 뒷페이지가 상세화면이면 인덱스로....
                 webView.clearHistory();
                 webView.loadUrl(getString(R.string.index));
 
-            } else if (backTargetUrl.equals(getString(R.string.index))) {
-                //webView.clearHistory();
-                webView.loadUrl(getString(R.string.index));
             }
 
             webView.goBack();
@@ -214,11 +260,15 @@ public class MainActivity extends AppCompatActivity {
                     // 공유하기 타고왔을경우 or 결제완료 후 주문내역 이동시 or 결제취소시
                     webView.clearHistory();
                     webView.loadUrl(getString(R.string.index));
+
+                } else if (currentUrl.contains("order_detail.php")) {
+                    // 푸시알림으로 왔을때
+                    webView.loadUrl(getString(R.string.domain) + "bbs/order_list.php");
+
                 } else {
                     backPrssedTime = tempTime;
                     Toast.makeText(getApplicationContext(), "한번 더 뒤로가기 누를시 앱이 종료됩니다.", Toast.LENGTH_SHORT).show();
                 }
-
             }
         }
     }
@@ -241,6 +291,10 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
         }
+    }
+    public void setCookieRegist(String key, String val) {
+        //cookieManager.setCookie();
+
     }
 
     @Override
@@ -290,11 +344,10 @@ public class MainActivity extends AppCompatActivity {
                 TOKEN = task.getResult().getToken();
 
                 // Log and toast
-                String msg = mActivity.getString(R.string.msg_token_fmt, TOKEN);
-                Log.d("로그:token", msg);
+                //String msg = mActivity.getString(R.string.msg_token_fmt, TOKEN);
+                //Log.d("로그:token", msg);
             }
         });
-
     }
 
 

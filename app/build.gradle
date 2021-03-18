@@ -10,8 +10,8 @@ android {
         applicationId "kr.co.itforone.happy100"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 4
-        versionName "1.3"
+        versionCode 7
+        versionName "1.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -53,5 +53,9 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:26.3.0')
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-messaging:20.0.0'
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    // annotationProcessor : annotation processor classpath 에서 compile processor classpath를 분리하여 빌드 성능개선
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
 }

@@ -17,6 +17,11 @@ import androidx.core.app.NotificationCompat;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Random;
+
+
 /**
  * NOTE: There can only be one service in each app that receives FCM messages. If multiple
  * are declared in the Manifest then the first one will be chosen.
@@ -31,6 +36,7 @@ import com.google.firebase.messaging.RemoteMessage;
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseMsgService";
+    private int notiId = 0;
 
     /**
      * Called when message is received.
@@ -119,29 +125,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String channelId = "tdaeridriver";
         String gubun=remote.getData().get("gubun");
         String viewUrl=remote.getData().get("viewUrl");
-        Log.d("remote","Message:"+remote.getFrom());
-
+        Log.d("로그:remote","Message:"+remote.getFrom());
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("goUrl",goUrl);
 
-
-        Log.d("remote",remote.toString());
-
-
-
-
+        Log.d("로그:remote",remote.toString());
+        Log.d("로그:goUrl", goUrl);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
-
-
-
-
-
-
-
 
 
         Bitmap BigPictureStyle= BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
@@ -161,16 +155,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         Notification notification = notificationBuilder.build();
 
-
-
-
-
-
-
-
-
-
-
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -185,7 +169,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     .build();
 
         }
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        //notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+        notificationManager.notify(createID(), notificationBuilder.build());    //
 
+    }
+
+    private int createID() {
+        int id = 0;
+        Random rd = new Random();
+        id = rd.nextInt(99999);
+
+        //Log.d("createID()", String.valueOf(id));
+        return id;
     }
 }
