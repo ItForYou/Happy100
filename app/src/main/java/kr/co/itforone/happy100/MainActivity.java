@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new kr.co.itforone.happy100.ChoromeManager(this, this));
         webView.setWebContentsDebuggingEnabled(true); // 크롬디버깅
         WebSettings settings = webView.getSettings();
-        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=7");
+        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=9");
         settings.setTextZoom(100);
         settings.setJavaScriptEnabled(true);    // 자바스크립트
         // 휴대폰본인인증시 필수설정
@@ -149,12 +149,27 @@ public class MainActivity extends AppCompatActivity {
         loadUrl = getString(R.string.index);
         try {
             Intent intent = getIntent();
+            /*
             Uri uriData = intent.getData();
             Log.d("로그:getExtras()", intent.getExtras().getString("goUrl"));
+
             if (uriData != null) {
                 String idx = uriData.getQueryParameter("idx");
                 if (!idx.equals("")) {
                     loadUrl = uriData.getQueryParameter("url").toString() + "?idx=" + uriData.getQueryParameter("idx").toString();
+                }
+            } else if (!intent.getExtras().getString("goUrl").equals("")) {
+                loadUrl = intent.getExtras().getString("goUrl");
+            }
+            */
+            if (intent.ACTION_VIEW.equals(intent.getAction())) {
+                Uri uriData = intent.getData();
+                Log.d("로그:uriData", uriData.toString());
+                if (uriData != null) {
+                    String idx = uriData.getQueryParameter("idx");
+                    if (!idx.equals("")) {
+                        loadUrl = uriData.getQueryParameter("url").toString() + "?idx=" + uriData.getQueryParameter("idx").toString();
+                    }
                 }
             } else if (!intent.getExtras().getString("goUrl").equals("")) {
                 loadUrl = intent.getExtras().getString("goUrl");

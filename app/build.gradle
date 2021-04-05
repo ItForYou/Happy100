@@ -10,8 +10,8 @@ android {
         applicationId "kr.co.itforone.happy100"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 7
-        versionName "1.6"
+        versionCode 9
+        versionName "1.8"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

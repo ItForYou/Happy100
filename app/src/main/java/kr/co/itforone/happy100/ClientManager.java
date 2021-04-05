@@ -45,6 +45,21 @@ class ClientManager extends WebViewClient {
         super.onPageStarted(view, url, favicon);
         //mainActivity.pBar.setVisibility(View.VISIBLE);  // 로딩바시작
         mainActivity.imgGif.setVisibility(View.VISIBLE);
+
+        // 당겨서 새로고침 제어
+        String[] noRefreshPage = {"/bbs/store_menu.php", "/bbs/store_menu_list.php", "/bbs/add_delivery.php", "/bbs/add_detail", "/bbs/store_view.php"};
+        Boolean chkPage = false;
+        for (String page : noRefreshPage) {
+            if (url.indexOf(page) > -1) chkPage = true;
+        }
+        Log.d("로그:스크롤안됨?", chkPage.toString());
+        if (chkPage) {
+            mainActivity.Norefresh();
+            mainActivity.flg_refresh=0;
+        } else {
+            mainActivity.Yesrefresh();
+            mainActivity.flg_refresh=1;
+        }
     }
 
     // 로딩종료시
@@ -68,20 +83,6 @@ class ClientManager extends WebViewClient {
             mainActivity.webView.loadUrl("javascript:initDeleteCart()");
             firstLoadChk = true;
             //Log.d("로그:첫시작후 page fin", firstLoadChk + "");
-        }
-
-        // 당겨서 새로고침 제어
-        String[] noRefreshPage = {"/bbs/store_menu.php", "/bbs/store_menu_list.php", "/bbs/add_delivery.php", "/bbs/add_detail", "/bbs/store_view.php"};
-        Boolean chkPage = false;
-        for (String page : noRefreshPage) {
-            if (url.indexOf(page) > -1) chkPage = true;
-        }
-        if (chkPage) {
-            mainActivity.Norefresh();
-            mainActivity.flg_refresh=0;
-        } else {
-            mainActivity.Yesrefresh();
-            mainActivity.flg_refresh=1;
         }
 
         // 이전 히스토리 삭제
@@ -113,7 +114,6 @@ class ClientManager extends WebViewClient {
                 }
             } catch (URISyntaxException e) {
                 //URI 문법 오류 시 처리 구간
-
             } catch (ActivityNotFoundException e) {
                 String packageName = intent.getPackage();
                 if (!packageName.equals("")) {

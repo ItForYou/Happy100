@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
@@ -122,25 +123,27 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String messageBody=remote.getData().get("message");
         String subject=remote.getData().get("subject");
         String goUrl=remote.getData().get("goUrl");
-        String channelId = "tdaeridriver";
         String gubun=remote.getData().get("gubun");
         String viewUrl=remote.getData().get("viewUrl");
-        Log.d("로그:remote","Message:"+remote.getFrom());
+        String od_step=remote.getData().get("od_step");
+        String channelId = (od_step.equals("1"))? "od_channel_01" : "od_channel";
+
+        //Log.d("로그:step", od_step +"//"+ channelId + "//"+ od_step.equals("STEP01"));
+        //Log.d("로그:remote","Message:"+remote.getFrom());
 
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("goUrl",goUrl);
 
-        Log.d("로그:remote",remote.toString());
+        //Log.d("로그:remote",remote.toString());
         Log.d("로그:goUrl", goUrl);
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
-
         Bitmap BigPictureStyle= BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
         long vibrate[]={500,0,500,0};
-        /**/
+
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.mipmap.ic_launcher)
@@ -152,21 +155,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
                         .setStyle(new NotificationCompat.BigTextStyle().bigText(messageBody));
 
-
         Notification notification = notificationBuilder.build();
 
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
+        // 오레오 이상 (안드로이드8)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            AudioAttributes att = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                    .build();
+
             NotificationChannel channel = new NotificationChannel(channelId,
                     "Channel human readable title",
                     NotificationManager.IMPORTANCE_HIGH);
+
+            if (od_step.equals("1")) {
+                // 푸시알림음
+                Uri uri = Uri.parse("android.resource://kr.co.itforone.happy100/" + R.raw.step01_sound);
+                channel.setDescription("order");
+                channel.enableLights(true);
+                channel.enableVibration(true);
+                channel.setSound(uri, att);
+            }
+
             notificationManager.createNotificationChannel(channel);
-            AudioAttributes att = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                    .build();
 
         }
         //notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
