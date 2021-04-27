@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new kr.co.itforone.happy100.ChoromeManager(this, this));
         webView.setWebContentsDebuggingEnabled(true); // 크롬디버깅
         WebSettings settings = webView.getSettings();
-        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=9");
+        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=10");
         settings.setTextZoom(100);
         settings.setJavaScriptEnabled(true);    // 자바스크립트
         // 휴대폰본인인증시 필수설정

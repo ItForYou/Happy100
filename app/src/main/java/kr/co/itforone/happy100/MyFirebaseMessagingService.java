@@ -126,9 +126,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String gubun=remote.getData().get("gubun");
         String viewUrl=remote.getData().get("viewUrl");
         String od_step=remote.getData().get("od_step");
-        String channelId = (od_step.equals("1"))? "od_channel_01" : "od_channel";
+        //String channelId = (od_step.equals("1"))? "od_channel_01" : "od_channel";
+        String channelId = (od_step.equals("0"))? "od_channel_01_210427" : "od_channel"; //210427변경
 
-        //Log.d("로그:step", od_step +"//"+ channelId + "//"+ od_step.equals("STEP01"));
+        Log.d("로그:step", od_step +"//"+ channelId + "//"+ od_step.equals("0"));
         //Log.d("로그:remote","Message:"+remote.getFrom());
 
         Intent intent = new Intent(this, MainActivity.class);
@@ -171,13 +172,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                     "Channel human readable title",
                     NotificationManager.IMPORTANCE_HIGH);
 
-            if (od_step.equals("1")) {
+            if (od_step.equals("0")) {
                 // 푸시알림음
-                Uri uri = Uri.parse("android.resource://kr.co.itforone.happy100/" + R.raw.step01_sound);
-                channel.setDescription("order");
+                //Uri uri = Uri.parse("android.resource://kr.co.itforone.happy100/" + R.raw.step01_sound);
+                Uri uri = Uri.parse("android.resource://kr.co.itforone.happy100/" + R.raw.step01_sound2);
+                channel.setDescription("order_ready_210427");
                 channel.enableLights(true);
                 channel.enableVibration(true);
                 channel.setSound(uri, att);
+
+//                Log.d("로그:푸시알림음세팅", "1");
             }
 
             notificationManager.createNotificationChannel(channel);
