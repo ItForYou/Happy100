@@ -128,18 +128,20 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         String od_step=remote.getData().get("od_step");
         //String channelId = (od_step.equals("1"))? "od_channel_01" : "od_channel";
         String channelId = (od_step.equals("0"))? "od_channel_01_210427" : "od_channel"; //210427변경
+        int notiId = createID();
 
         Log.d("로그:step", od_step +"//"+ channelId + "//"+ od_step.equals("0"));
         //Log.d("로그:remote","Message:"+remote.getFrom());
 
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK );
+        intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         intent.putExtra("goUrl",goUrl);
 
         //Log.d("로그:remote",remote.toString());
         Log.d("로그:goUrl", goUrl);
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, notiId /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Bitmap BigPictureStyle= BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
@@ -188,8 +190,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         }
         //notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-        notificationManager.notify(createID(), notificationBuilder.build());    //
-
+        notificationManager.notify(notiId, notificationBuilder.build());
     }
 
     private int createID() {

@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -31,6 +32,7 @@ class ClientManager extends WebViewClient {
     public LocationHandler locationHandler = new LocationHandler();
     private boolean firstLoadChk = false;
     private boolean sendToken = false;
+    public boolean gps_enabled = false;
 
     ClientManager(MainActivity mainActivity){
         this.mainActivity = mainActivity;
@@ -179,15 +181,28 @@ class ClientManager extends WebViewClient {
             curLat = gpsTracker.getLatitude();
             curLng = gpsTracker.getLongitude();
 
-            if (curLng == 0.0) {
-                sendEmptyMessageDelayed(0, 1000);
+            // 기기 gps on/off 확인
+            LocationManager lm = (LocationManager)mainActivity.getSystemService(Context.LOCATION_SERVICE);
+            try {
+                gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            } catch (Exception e) {
+            }
+            Log.d("로그:LocationHandler 진입", "curLat=" + curLat + "&curLng" + curLng + "&gps_enabled=" + gps_enabled);
+
+            if (gps_enabled) {
+                if (curLng == 0.0) {
+                    sendEmptyMessageDelayed(0, 1000);
+                } else {
+                    removeMessages(0);
+                    gpsCount++;
+
+                    //String androidId = Settings.Secure.getString(mainActivity.getContentResolver(), Settings.Secure.ANDROID_ID);
+                    mainActivity.webView.loadUrl("javascript:getMyLocation('"+ curLat +"', '"+ curLng +"', '')");
+                    //Log.d("로그:주소", "curLat=" + curLat + "&curLng" + curLng);
+                }
             } else {
                 removeMessages(0);
-                gpsCount++;
-
-                //String androidId = Settings.Secure.getString(mainActivity.getContentResolver(), Settings.Secure.ANDROID_ID);
-                mainActivity.webView.loadUrl("javascript:getMyLocation('"+ curLat +"', '"+ curLng +"', '')");
-                Log.d("로그:주소", "curLat=" + curLat + "&curLng" + curLng);
+                mainActivity.webView.loadUrl("javascript:savsSession('gps_enabled', false)");
             }
 
         }

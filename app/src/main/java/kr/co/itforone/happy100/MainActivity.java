@@ -63,12 +63,17 @@ public class MainActivity extends AppCompatActivity {
     public SharedPreferences preferences;  // 로그인데이터저장
     public SharedPreferences.Editor pEditor;
 
+    private ActivityManager am = ActivityManager.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // 데이터바인딩
         biding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         biding.setMainData(this);
+
+        am.addActivity(this);
 
         webView = biding.webview;
         refreshLayout = biding.refreshlayout;
@@ -104,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         webView.setWebChromeClient(new kr.co.itforone.happy100.ChoromeManager(this, this));
         webView.setWebContentsDebuggingEnabled(true); // 크롬디버깅
         WebSettings settings = webView.getSettings();
-        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=10");
+        settings.setUserAgentString(settings.getUserAgentString() + "INAPP/APP_VER=12");
         settings.setTextZoom(100);
         settings.setJavaScriptEnabled(true);    // 자바스크립트
         // 휴대폰본인인증시 필수설정
@@ -194,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             CookieSyncManager.getInstance().stopSync();
         }
+        Log.d("로그-onPause()", "");
     }
 
     @Override
@@ -202,6 +208,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             CookieSyncManager.getInstance().startSync();
         }
+        Log.d("로그-onResume()", "");
     }
 
     //뒤로가기이벤트
@@ -215,7 +222,7 @@ public class MainActivity extends AppCompatActivity {
             long intervalTime = tempTime - backPrssedTime;
 
             if (0 <= intervalTime && 2000 >= intervalTime) {
-                finish();
+                am.finishAllActivity();
             } else {
                 backPrssedTime = tempTime;
                 Toast.makeText(getApplicationContext(), "한번 더 뒤로가기 누를시 앱이 종료됩니다.", Toast.LENGTH_SHORT).show();
@@ -259,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
                 // or 푸시로 주문내역 목록인데 뒷페이지가 상세화면이면 인덱스로....
                 webView.clearHistory();
                 webView.loadUrl(getString(R.string.index));
-
             }
 
             webView.goBack();
@@ -269,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
             long intervalTime = tempTime - backPrssedTime;
 
             if (0 <= intervalTime && 2000 >= intervalTime) {
-                finish();
+                am.finishAllActivity();
             } else {
                 if (currentUrl.contains("store_view") || currentUrl.contains("/bbs/order_result.php") || currentUrl.contains("/zeropay/cancel.php")) {
                     // 공유하기 타고왔을경우 or 결제완료 후 주문내역 이동시 or 결제취소시
@@ -307,10 +313,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
         }
     }
-    public void setCookieRegist(String key, String val) {
-        //cookieManager.setCookie();
-
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -344,6 +346,10 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception e) {
             }
         }
+
+        Log.d("로그-onActivityResult()", "");
+
+
     }
 
     // 푸시..
@@ -357,10 +363,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Get new Instance ID token
                 TOKEN = task.getResult().getToken();
-
-                // Log and toast
-                //String msg = mActivity.getString(R.string.msg_token_fmt, TOKEN);
-                //Log.d("로그:token", msg);
+                Log.d("로그:token", TOKEN);
             }
         });
     }

@@ -30,6 +30,8 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
         context = this.getBaseContext();
+        
+        Log.d("로그", "splash onCreate");
 
         checkPermissions();
     }
